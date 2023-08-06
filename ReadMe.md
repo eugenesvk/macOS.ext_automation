@@ -11,6 +11,7 @@ A few macOS automation scripts
 
 ## Install
   (saving folders like `.workflow` save [repo as a zip](https://github.com/eugenesvk/macOS.ext_automation/archive/refs/heads/main.zip) and unzip it locally)
+  - add all files from the [libraries](./lib) folder to `~/Library/Script Libraries` (or `/Library/Script Libraries` for all users)` 
   - Open [saveURLactive](./saveURLactive.workflow) in Automator, adjust browsers in which it will be active (defaults to Safari and Vivaldi, Firefox not supported) and optionally edit variables at the top of the script
 
     |Variable            	|Default      	| Description                                              	|
