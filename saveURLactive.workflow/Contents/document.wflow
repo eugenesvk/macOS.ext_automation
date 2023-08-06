@@ -108,7 +108,7 @@ if (currentTabKey) {
     }
     let fileStem	= `${fileHost}${host_title_sep}${currentTabTitle}`
     if ([...fileStem].length &gt; path_max) {
-      fileStem	= (Array.from(str).slice(0,path_max).join('')) }
+      fileStem	= (Array.from(fileStem).slice(0,path_max).join('')) }
     let fileStem_legal = fileStem.replace(/\/$/,'') // remove last path sep/
     for (const [illegal,replacement] of Object.entries(illegal_fs_symbols)) {
       if (fileStem.includes(illegal)) {fileStem_legal = fileStem_legal.replaceAll(illegal,replacement)}
