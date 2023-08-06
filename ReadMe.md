@@ -31,5 +31,19 @@ description continued
     - Firefox doesn't support automation (there is an accessibility workaround, but it's not implemented)
     - quickly switching to another app after activating the workflow might raise an `not a supported browser` error
 
+## JavaScript‹›AppleScript interop for macOS automation libraries
+  - JavaScript can use any bundle
+  - AppleScript can use any AppleScript
+
+  |↓script</br>            can load library→	|JavaScript</br>bundle.scpt _d_	|AppleScript</br>bundle.scpt _d_	|AppleScript</br>script.scpt	|JavaScript</br>script.scpt	|
+  |:-                                       	|:-:                           	|:-:                            	|:-:                        	|:-:                       	|
+  |JavaScript                               	|         ✓                    	|         ✓                     	|         ✗                 	|         ✗                	|
+  |AppleScript                              	|         ✗                    	|         ✓                     	|         ✓                 	|         ✗                	|
+
+`JXA` = JavaScript for Automation, referred to as JavaScript or JS for simplicity
+
+`AS` = AppleScript
+
 ## Credits
   - [Get Title and URL.applescript](https://gist.github.com/vitorgalvao/5392178)
+  - [SO answer on interop](https://stackoverflow.com/a/69897108/20361194)
