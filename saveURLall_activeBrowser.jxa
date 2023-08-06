@@ -1,0 +1,86 @@
+(() => { // Self-executing function: can use in the Script Editor as well as with osascript to run automatically
+// ————————————————————————————————————————————————————————
+// Set directory to save urls to and extension (without .)
+// const directory        	= input[0] + '' // in Automator
+const directory           	= '~/Downloads'
+const extension           	= 'url'
+const prefixWinID         	= true // add a numeric prefix to the url name to indicate a window
+const path_max            	= 120 // cut off very long urls at this many unicode codepoints
+const host_title_sep      	= ' ' // separator between www.host.com and Tab Title
+const user_replace_symbols	= {   // replace symbols in path (illegal win+mac filesystem symbols will be replaced from ~/Library/Script Libraries/str.scptd’s illegal_fs_symbols constant)
+  // '/':'⧸',
+}
+// ————————————————————————————————————————————————————————
+/* Firefox doesn't support automation, hackaround possible, but not implemented here
+link=$( osascript -e  'tell application "System Events" to tell process "Firefox" to get value of UI element 1 of combo box 1 of toolbar "Navigation" of first group of front window' )
+echo "$link"
+*/
+ObjC.import("Foundation");
+
+const str	= Library("str")
+const sys	= Library("sys")
+const p  	= sys.p 	// helper console log
+const pp 	= sys.pp	// helper print var names, must be passed as {objects}
+const pt 	= sys.pt	// helper print var's type and var's value
+const ps 	= sys.ps	// helper print objects via stringify
+
+const illegal_fs_symbols = {...str.get_illegal_fs_symbols(), ...user_replace_symbols};
+const strr = JSON.stringify(illegal_fs_symbols, null, 0)
+// ps(illegal_fs_symbols)
+// pp(strr)
+
+let fileDir	= directory
+if (fileDir.startsWith('~/')) {
+  const Home	= $.NSHomeDirectory().js
+  fileDir = fileDir.replace('~', Home)
+}
+
+// delay(2) // for testing as a standalone script, 2sec before switching to a browser
+// Get titles/URLs of all the tabs of all the windows of the active browser. For shorter code inclusive of all editions, only the start of the application name is checked (adapted from https://gist.github.com/vitorgalvao/5392178)
+const frontAppName	= sys.getFrontProcName()
+const frontApp    	= Application(frontAppName)
+const webkit      	= ["Safari","Webkit","Orion"]
+const chromium    	= ["Google Chrome","Chromium","Opera","Vivaldi","Brave Browser","Microsoft Edge","Arc"]
+
+if ( !(  webkit.some(appName => frontAppName.startsWith(appName)))
+  && !(chromium.some(appName => frontAppName.startsWith(appName)))) {
+  throw new Error(`${frontAppName} is not a supported browser: ${webkit.concat(chromium).join(", ")}`) }
+
+const wins    	= frontApp.windows
+const winCount	= wins.length
+Object.keys(wins).forEach(winID => {
+  const win 	= wins[winID]
+  const tabs	= win.tabs()
+  for (const [tabID,tab] of Object.entries(tabs)) {
+    const tabTitle   	= tab.name()
+    const tabURL     	= tab.url()
+    const {host,path}	= str.getURLpart(tabURL)
+    if ((tabTitle) && (host)) {
+      let fileHost	= host
+      if (fileHost.startsWith(  'www.')) {
+        fileHost = host.replace('www.','')}
+      let fileStem	= (((prefixWinID) && (winCount > 1)) ? `${winID} ` : '') + `${fileHost}${host_title_sep}${tabTitle}`
+      if ([...fileStem].length > path_max) {
+        fileStem	= (Array.from(fileStem).slice(0,path_max).join('')) }
+      let fileStem_legal = fileStem.replace(/\/$/,'') // remove last path sep/
+      for (const [illegal,replacement] of Object.entries(illegal_fs_symbols)) {
+        if (fileStem.includes(illegal)) {fileStem_legal = fileStem_legal.replaceAll(illegal,replacement)}}
+      fileStem       	= fileStem_legal
+      const fileName 	= `${fileStem}.${extension}`
+      const filePath 	= `${fileDir}/${fileName}`
+      const fileStrJS	= `[InternetShortcut]\nURL=${tabURL}\n`
+      const fileStr  	= $.NSString.alloc.initWithUTF8String(fileStrJS)
+      // check if file exists, and if yes, add something to it?
+      // const fm         	= $.NSFileManager.defaultManager
+      // const nsfilePath 	= $.NSString.alloc.initWithUTF8String(filePath)
+      // const isFileThere	= $.NSFileManager.defaultManager.fileExistsAtPath(nsfilePath)
+      // if (isFileThere) {
+        // filePath = `${fileDir}/${host}${urlextra}.${extension}`
+      // }
+      // console.log(`filePath=¦${filePath}¦`)
+      fileStr.writeToFileAtomicallyEncodingError(filePath,true, $.NSUTF8StringEncoding, null)
+    } else { console.log(`Couldn't parse ‘${tabURL}’, skipping`) }
+  }
+})
+
+})()
