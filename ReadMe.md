@@ -1,11 +1,9 @@
 <p align="center">
-Brief description
+A few macOS automation scripts
 <br>
-(description continued)
 </p>
 
 <p align="center">  
-description continued
 </p>
 
 
